@@ -1,4 +1,4 @@
-﻿"""ORB Bot â€” Trading Analytics Dashboard.
+"""ORB Bot — Trading Analytics Dashboard.
 
 Live analytics della strategia ORB su CSV generato dal bot NinjaTrader.
 Avvio: streamlit run dashboard.py  (oppure doppio click su run_dashboard.bat)
@@ -59,10 +59,10 @@ PLOTLY_LAYOUT = dict(
 # ============================================================================ #
 
 st.set_page_config(
-    page_title="ORB Bot â€” Analytics",
+    page_title="ORB Bot — Analytics",
     layout="wide",
     initial_sidebar_state="expanded",
-    page_icon="â—",
+    page_icon="●",
 )
 
 st_autorefresh(interval=REFRESH_MS, key="auto_refresh")
@@ -193,9 +193,9 @@ def load_trades() -> tuple[pd.DataFrame, str]:
     df["boost_label"] = df["is_boost"].map({True: "Boost 1.5R", False: "Normale 0.5R"})
     df["year_month"] = df["entry_dt"].dt.to_period("M")
     if "strategy_label" not in df.columns:
-        df["strategy_label"] = "â€”"
+        df["strategy_label"] = "—"
     else:
-        df["strategy_label"] = df["strategy_label"].fillna("â€”").astype(str)
+        df["strategy_label"] = df["strategy_label"].fillna("—").astype(str)
     return df.sort_values("entry_dt").reset_index(drop=True), source
 
 
@@ -284,8 +284,8 @@ def compute_metrics(df: pd.DataFrame) -> dict:
 
 def short_strategy_label(label: str) -> str:
     """Es. 'SL0.6_RR2.5_SkipMon_BoostTueFri_R0.5-1.5' -> '0.6 RR2.5'."""
-    if not label or label == "â€”":
-        return label or "â€”"
+    if not label or label == "—":
+        return label or "—"
     parts = label.split("_")
     sl_val = rr_val = None
     for p in parts:
@@ -304,11 +304,11 @@ def short_strategy_label(label: str) -> str:
 
 
 def describe_strategy(label: str) -> str:
-    if not label or label == "â€”":
+    if not label or label == "—":
         return "_Strategia non indicata nel CSV._"
     day_map = {
-        "Mon": "lunedÃ¬", "Tue": "martedÃ¬", "Wed": "mercoledÃ¬",
-        "Thu": "giovedÃ¬", "Fri": "venerdÃ¬", "Sat": "sabato", "Sun": "domenica",
+        "Mon": "lunedì", "Tue": "martedì", "Wed": "mercoledì",
+        "Thu": "giovedì", "Fri": "venerdì", "Sat": "sabato", "Sun": "domenica",
     }
 
     def expand_days(tail: str) -> str:
@@ -318,25 +318,25 @@ def describe_strategy(label: str) -> str:
             chunk = tail[i:i + 3]
             names.append(day_map.get(chunk, chunk))
             i += 3
-        return ", ".join(names) if names else "â€”"
+        return ", ".join(names) if names else "—"
 
     lines = []
     for p in label.split("_"):
         up = p.upper()
         if up.startswith("SL") and len(p) > 2:
-            lines.append(f"- **SL {p[2:]}** â€” Stop Loss: {p[2:]} Ã— OR size")
+            lines.append(f"- **SL {p[2:]}** — Stop Loss: {p[2:]} × OR size")
         elif up.startswith("RR") and len(p) > 2:
-            lines.append(f"- **RR {p[2:]}** â€” Risk/Reward target 1:{p[2:]}")
+            lines.append(f"- **RR {p[2:]}** — Risk/Reward target 1:{p[2:]}")
         elif up.startswith("SKIP"):
             tail = p[4:]
-            lines.append(f"- **Skip {expand_days(tail)}** â€” nessun trade in quel/quei giorni")
+            lines.append(f"- **Skip {expand_days(tail)}** — nessun trade in quel/quei giorni")
         elif up.startswith("BOOST"):
             tail = p[5:]
-            lines.append(f"- **Boost {expand_days(tail)}** â€” R-target aumentato in quei giorni")
+            lines.append(f"- **Boost {expand_days(tail)}** — R-target aumentato in quei giorni")
         elif up.startswith("R") and "-" in p and len(p) > 1:
             vals = p[1:].split("-")
             if len(vals) == 2:
-                lines.append(f"- **R {vals[0]}â€“{vals[1]}** â€” R-target normale {vals[0]}R Â· boost {vals[1]}R")
+                lines.append(f"- **R {vals[0]}–{vals[1]}** — R-target normale {vals[0]}R · boost {vals[1]}R")
             else:
                 lines.append(f"- `{p}`")
         else:
@@ -346,14 +346,14 @@ def describe_strategy(label: str) -> str:
 
 def fmt_usd(v: float, sign: bool = False) -> str:
     if pd.isna(v) or v == np.inf or v == -np.inf:
-        return "âˆž" if v == np.inf else "â€”"
+        return "∞" if v == np.inf else "—"
     s = f"{v:+,.0f}" if sign else f"{v:,.0f}"
     return f"${s}"
 
 
 def fmt_num(v: float, decimals: int = 2, suffix: str = "") -> str:
     if pd.isna(v) or v == np.inf:
-        return "âˆž"
+        return "∞"
     return f"{v:.{decimals}f}{suffix}"
 
 
@@ -385,7 +385,7 @@ def render_month_calendar(df: pd.DataFrame, year: int, month: int) -> str:
     html = (
         f'<div class="month-header">'
         f'<div class="month-title">{MONTHS_IT[month-1]} {year}</div>'
-        f'<div class="month-stats">{m_trades} trade Â· WR {m_wr:.0f}% Â· '
+        f'<div class="month-stats">{m_trades} trade · WR {m_wr:.0f}% · '
         f'<span style="color:{head_color};font-weight:700">{sign}${m_total:,.0f}</span></div>'
         f'</div>'
         f'<div class="cal-grid">'
@@ -450,7 +450,7 @@ with header_l:
         "<h1 style='margin:0'>Opening Range Breakout "
         "<span style='color:#9AA0A6;font-weight:400;font-size:1.3rem'>Dashboard</span></h1>"
         "<div style='margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap'>"
-        "<span class='live-badge'><span class='live-dot'></span>LIVE Â· 30s</span>"
+        "<span class='live-badge'><span class='live-dot'></span>LIVE · 30s</span>"
         f"<span class='sub'>Sorgente: <code style='background:#12161F;padding:2px 6px;border-radius:4px'>{data_source}</code></span>"
         "</div>",
         unsafe_allow_html=True,
@@ -462,7 +462,7 @@ with header_r:
         st.markdown(
             f"<div class='last-trade-card'>"
             f"<div class='last-trade-label'>Ultimo trade</div>"
-            f"<div class='last-trade-val'>{lt['date']} Â· {lt['entry_hour_str']} Â· "
+            f"<div class='last-trade-val'>{lt['date']} · {lt['entry_hour_str']} · "
             f"<span style='color:{c}'>{fmt_usd(lt['pnl_usd'], sign=True)}</span></div>"
             f"</div>",
             unsafe_allow_html=True,
@@ -650,6 +650,21 @@ with tab_overview:
         fig.update_yaxes(title="PnL cumulato $")
         st.plotly_chart(fig, width="stretch")
 
+        st.markdown("#### Underwater — Drawdown")
+        fig_dd = go.Figure()
+        fig_dd.add_trace(
+            go.Scatter(
+                x=df["trade_num"], y=df["drawdown"], mode="lines",
+                fill="tozeroy", line=dict(color=C_LOSS, width=1.5, shape="spline", smoothing=0.4),
+                fillcolor="rgba(234,57,67,0.22)",
+                hovertemplate="<b>Trade #%{x}</b><br>DD: $%{y:,.0f}<extra></extra>",
+            )
+        )
+        fig_dd.update_layout(**PLOTLY_LAYOUT, height=260, showlegend=False)
+        fig_dd.update_xaxes(title="Trade #")
+        fig_dd.update_yaxes(title="Drawdown $")
+        st.plotly_chart(fig_dd, width="stretch")
+
     with c_stats:
         st.markdown("#### Statistiche")
         stats_rows = [
@@ -713,7 +728,7 @@ with tab_calendar:
 # TAB: PERFORMANCE
 # ============================================================================ #
 with tab_perf:
-    st.markdown("#### Rolling metrics â€” finestra 20 trade")
+    st.markdown("#### Rolling metrics — finestra 20 trade")
     c_rwr, c_rexp = st.columns(2)
     with c_rwr:
         fig_rwr = go.Figure()
@@ -763,7 +778,7 @@ with tab_perf:
                 x=dow_agg["dow_name"], y=dow_agg["pnl"],
                 marker_color=[C_WIN if v >= 0 else C_LOSS for v in dow_agg["pnl"]],
                 marker_line_width=0,
-                text=[f"{r['trades']} trade Â· WR {r['wr']:.0f}%" for _, r in dow_agg.iterrows()],
+                text=[f"{r['trades']} trade · WR {r['wr']:.0f}%" for _, r in dow_agg.iterrows()],
                 textposition="outside", textfont=dict(color=C_MUTED, size=11),
                 hovertemplate="<b>%{x}</b><br>PnL: $%{y:,.0f}<br>%{text}<extra></extra>",
             )
@@ -827,3 +842,279 @@ with tab_strat:
         st.markdown("#### Per R-target")
         st.dataframe(agg_table("boost_label").style.format(strat_fmt), width="stretch")
 
+    st.markdown("#### Correlazione Opening Range size vs outcome")
+    if df["or_size"].dropna().shape[0] >= 5:
+        fig_or = go.Figure()
+        fig_or.add_trace(
+            go.Scatter(
+                x=df["or_size"], y=df["r_effective"], mode="markers",
+                marker=dict(
+                    size=12,
+                    color=df["is_win"].map({True: C_WIN, False: C_LOSS}),
+                    line=dict(color=C_BG, width=1),
+                    opacity=0.85,
+                ),
+                text=[f"{d} {h}" for d, h in zip(df["date"], df["entry_hour_str"])],
+                hovertemplate="<b>%{text}</b><br>OR size: %{x:.2f}<br>R: %{y:+.2f}<extra></extra>",
+            )
+        )
+        fig_or.add_hline(y=0, line_dash="dot", line_color=C_NEUTRAL)
+        try:
+            z = np.polyfit(df["or_size"], df["r_effective"], 1)
+            xs = np.linspace(df["or_size"].min(), df["or_size"].max(), 50)
+            fig_or.add_trace(
+                go.Scatter(
+                    x=xs, y=z[0] * xs + z[1], mode="lines",
+                    line=dict(color=C_ACCENT, dash="dash", width=2),
+                    name=f"Trend: {z[0]:+.3f}·x + {z[1]:+.2f}",
+                )
+            )
+            corr = df["or_size"].corr(df["r_effective"])
+            st.caption(f"Correlazione Pearson OR size ↔ R effettivo: **{corr:+.3f}**")
+        except Exception:
+            pass
+        fig_or.update_layout(**PLOTLY_LAYOUT, height=360)
+        fig_or.update_xaxes(title="OR size (punti)")
+        fig_or.update_yaxes(title="R effettivo")
+        st.plotly_chart(fig_or, width="stretch")
+
+    st.markdown("#### Tempo in trade")
+    c_h, c_s = st.columns(2)
+    with c_h:
+        fig_tit = go.Figure()
+        fig_tit.add_trace(
+            go.Histogram(x=df.loc[df["is_win"], "time_in_trade_min"], name="Win",
+                         marker_color=C_WIN, nbinsx=25, opacity=0.75, marker_line_width=0)
+        )
+        fig_tit.add_trace(
+            go.Histogram(x=df.loc[~df["is_win"], "time_in_trade_min"], name="Loss",
+                         marker_color=C_LOSS, nbinsx=25, opacity=0.75, marker_line_width=0)
+        )
+        fig_tit.update_layout(**PLOTLY_LAYOUT, height=300, barmode="overlay")
+        fig_tit.update_xaxes(title="Minuti in trade")
+        fig_tit.update_yaxes(title="Trade")
+        st.plotly_chart(fig_tit, width="stretch")
+    with c_s:
+        fig_ts = go.Figure()
+        fig_ts.add_trace(
+            go.Scatter(
+                x=df["time_in_trade_min"], y=df["r_effective"], mode="markers",
+                marker=dict(
+                    size=11,
+                    color=df["is_win"].map({True: C_WIN, False: C_LOSS}),
+                    line=dict(color=C_BG, width=1), opacity=0.85,
+                ),
+                hovertemplate="Tempo: %{x:.0f} min<br>R: %{y:+.2f}<extra></extra>",
+            )
+        )
+        fig_ts.add_hline(y=0, line_dash="dot", line_color=C_NEUTRAL)
+        fig_ts.update_layout(**PLOTLY_LAYOUT, height=300, showlegend=False)
+        fig_ts.update_xaxes(title="Minuti in trade")
+        fig_ts.update_yaxes(title="R effettivo")
+        st.plotly_chart(fig_ts, width="stretch")
+
+
+# ============================================================================ #
+# TAB: EOD
+# ============================================================================ #
+with tab_eod:
+    eod_df = df[df["exit_type"] == "EOD"]
+    tp_df = df[df["exit_type"] == "TP"]
+    sl_df = df[df["exit_type"] == "SL"]
+
+    n_eod = len(eod_df)
+    if n_eod == 0:
+        st.info("Nessun trade chiuso in EOD tra i filtri selezionati. Gli EOD sono "
+                "trade dove il bot ha chiuso a fine sessione senza aver toccato TP o SL.")
+    else:
+        eod_wins = int(eod_df["is_win"].sum())
+        eod_wr = eod_wins / n_eod * 100
+        eod_pnl = eod_df["pnl_usd"].sum()
+        eod_exp_r = eod_df["r_effective"].mean()
+        eod_avg_pnl = eod_df["pnl_usd"].mean()
+        eod_share = n_eod / M["n"] * 100
+
+        k1, k2, k3, k4, k5 = st.columns(5)
+        k1.metric("Trade EOD", f"{n_eod}", f"{eod_share:.1f}% del totale")
+        k2.metric("WR EOD", f"{eod_wr:.1f}%", f"{eod_wins}W · {n_eod - eod_wins}L")
+        k3.metric("PnL EOD totale", fmt_usd(eod_pnl, sign=True))
+        k4.metric("Avg PnL EOD", fmt_usd(eod_avg_pnl, sign=True))
+        k5.metric("Expectancy R EOD", f"{eod_exp_r:+.2f}")
+
+        st.markdown("<div style='margin-top:12px'></div>", unsafe_allow_html=True)
+
+        comp = pd.DataFrame({
+            "Exit": ["TP", "SL", "EOD"],
+            "Trade": [len(tp_df), len(sl_df), n_eod],
+            "WR %": [
+                (tp_df["is_win"].mean() * 100) if len(tp_df) else 0,
+                (sl_df["is_win"].mean() * 100) if len(sl_df) else 0,
+                eod_wr,
+            ],
+            "Avg R": [
+                tp_df["r_effective"].mean() if len(tp_df) else 0,
+                sl_df["r_effective"].mean() if len(sl_df) else 0,
+                eod_exp_r,
+            ],
+            "PnL $": [tp_df["pnl_usd"].sum(), sl_df["pnl_usd"].sum(), eod_pnl],
+            "Avg time (min)": [
+                tp_df["time_in_trade_min"].mean() if len(tp_df) else 0,
+                sl_df["time_in_trade_min"].mean() if len(sl_df) else 0,
+                eod_df["time_in_trade_min"].mean() if n_eod else 0,
+            ],
+        })
+
+        st.markdown("#### Confronto exit type")
+        c1, c2 = st.columns(2)
+        with c1:
+            fig_cnt = go.Figure(
+                go.Bar(
+                    x=comp["Exit"], y=comp["Trade"],
+                    marker_color=[C_WIN, C_LOSS, C_GOLD], marker_line_width=0,
+                    text=comp["Trade"], textposition="outside",
+                    textfont=dict(color=C_TEXT, size=12),
+                )
+            )
+            fig_cnt.update_layout(**PLOTLY_LAYOUT, height=300,
+                                  title=dict(text="Numero di trade per tipo di uscita", x=0.01))
+            fig_cnt.update_yaxes(title="Trade")
+            st.plotly_chart(fig_cnt, width="stretch")
+        with c2:
+            fig_r = go.Figure(
+                go.Bar(
+                    x=comp["Exit"], y=comp["Avg R"],
+                    marker_color=[C_WIN if v >= 0 else C_LOSS for v in comp["Avg R"]],
+                    marker_line_width=0,
+                    text=[f"{v:+.2f}" for v in comp["Avg R"]], textposition="outside",
+                    textfont=dict(color=C_TEXT, size=12),
+                )
+            )
+            fig_r.add_hline(y=0, line_dash="dot", line_color=C_NEUTRAL)
+            fig_r.update_layout(**PLOTLY_LAYOUT, height=300,
+                                title=dict(text="Expectancy R medio per tipo di uscita", x=0.01))
+            fig_r.update_yaxes(title="Avg R")
+            st.plotly_chart(fig_r, width="stretch")
+
+        st.dataframe(
+            comp.style.format({
+                "WR %": "{:.1f}",
+                "Avg R": "{:+.3f}",
+                "PnL $": "{:+,.2f}",
+                "Avg time (min)": "{:.0f}",
+            }),
+            width="stretch", hide_index=True,
+        )
+
+        st.markdown("<div style='margin-top:14px'></div>", unsafe_allow_html=True)
+        c_d, c_h = st.columns(2)
+
+        with c_d:
+            st.markdown("#### EOD per direction")
+            dir_eod = eod_df.groupby("direction").agg(
+                trade=("is_win", "count"),
+                wr=("is_win", lambda x: x.mean() * 100),
+                pnl=("pnl_usd", "sum"),
+            ).reset_index()
+            if len(dir_eod):
+                fig_ed = go.Figure(
+                    go.Bar(
+                        x=dir_eod["direction"], y=dir_eod["pnl"],
+                        marker_color=[C_WIN if v >= 0 else C_LOSS for v in dir_eod["pnl"]],
+                        marker_line_width=0,
+                        text=[f"{r['trade']} trade · WR {r['wr']:.0f}%" for _, r in dir_eod.iterrows()],
+                        textposition="outside", textfont=dict(color=C_MUTED, size=11),
+                    )
+                )
+                fig_ed.update_layout(**PLOTLY_LAYOUT, height=300)
+                fig_ed.update_yaxes(title="PnL $")
+                st.plotly_chart(fig_ed, width="stretch")
+
+        with c_h:
+            st.markdown("#### EOD per orario entry")
+            hour_eod = eod_df.groupby("entry_hour_str").agg(
+                trade=("is_win", "count"),
+                pnl=("pnl_usd", "sum"),
+            ).reset_index().sort_values("entry_hour_str")
+            if len(hour_eod):
+                fig_eh = go.Figure(
+                    go.Bar(
+                        x=hour_eod["entry_hour_str"], y=hour_eod["pnl"],
+                        marker_color=[C_WIN if v >= 0 else C_LOSS for v in hour_eod["pnl"]],
+                        marker_line_width=0,
+                        text=[f"n={t}" for t in hour_eod["trade"]],
+                        textposition="outside", textfont=dict(color=C_MUTED, size=11),
+                    )
+                )
+                fig_eh.update_layout(**PLOTLY_LAYOUT, height=300)
+                fig_eh.update_yaxes(title="PnL $")
+                st.plotly_chart(fig_eh, width="stretch")
+
+        st.markdown("#### Trade EOD — dettaglio")
+        eod_show = eod_df[[
+            "date", "entry_hour_str", "direction", "entry_price", "exit_price",
+            "pnl_usd", "r_effective", "time_in_trade_min", "r_target",
+        ]].rename(columns={
+            "entry_hour_str": "entry",
+            "time_in_trade_min": "minuti",
+            "r_effective": "R",
+            "r_target": "target",
+        }).iloc[::-1].reset_index(drop=True)
+
+        def _col(v):
+            if pd.isna(v): return ""
+            return f"color: {C_WIN}; font-weight: 600" if v > 0 else f"color: {C_LOSS}; font-weight: 600"
+
+        st.dataframe(
+            eod_show.style.map(_col, subset=["pnl_usd", "R"]).format({
+                "entry_price": "{:.2f}", "exit_price": "{:.2f}",
+                "pnl_usd": "{:+,.2f}", "R": "{:+.3f}",
+                "minuti": "{:.0f}", "target": "{:.2f}",
+            }),
+            width="stretch", hide_index=True,
+        )
+
+        st.caption(
+            "**Come leggere l'EOD**: se il PnL medio degli EOD è positivo, il bot sta "
+            "'raschiando' profit da trade che non hanno raggiunto il TP — potresti valutare "
+            "TP più conservativi. Se è negativo, stai tenendo troppo a lungo posizioni in "
+            "perdita: rivedi l'orario di entry o aggiungi un time-stop intermedio."
+        )
+
+
+# ============================================================================ #
+# TAB: TRADE LOG
+# ============================================================================ #
+with tab_trades:
+    st.markdown(f"#### Trade log ({len(df)} trade filtrati)")
+
+    cols_show = [
+        "date", "entry_hour_str", "direction", "entry_price", "qty",
+        "or_size", "r_target", "exit_hour_str", "exit_type", "exit_price",
+        "pnl_points", "pnl_usd", "r_effective", "time_in_trade_min", "instrument",
+    ]
+    table = df[cols_show].copy().rename(columns={
+        "entry_hour_str": "entry",
+        "exit_hour_str": "exit",
+        "time_in_trade_min": "min",
+        "r_effective": "R",
+    }).iloc[::-1].reset_index(drop=True)
+
+    def color_pnl(v):
+        if pd.isna(v): return ""
+        if v > 0: return f"color: {C_WIN}; font-weight: 600"
+        if v < 0: return f"color: {C_LOSS}; font-weight: 600"
+        return ""
+
+    styled = table.style.map(color_pnl, subset=["pnl_usd", "R", "pnl_points"]).format({
+        "entry_price": "{:.2f}", "exit_price": "{:.2f}",
+        "or_size": "{:.2f}", "r_target": "{:.2f}",
+        "pnl_points": "{:+.2f}", "pnl_usd": "{:+,.2f}",
+        "R": "{:+.3f}", "min": "{:.0f}",
+    })
+    st.dataframe(styled, width="stretch", hide_index=True, height=520)
+
+    csv_bytes = df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "Scarica CSV filtrato", data=csv_bytes,
+        file_name="orb_trades_filtered.csv", mime="text/csv",
+    )
