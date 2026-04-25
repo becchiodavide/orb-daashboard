@@ -650,21 +650,6 @@ with tab_overview:
         fig.update_yaxes(title="PnL cumulato $")
         st.plotly_chart(fig, width="stretch")
 
-        st.markdown("#### Underwater — Drawdown")
-        fig_dd = go.Figure()
-        fig_dd.add_trace(
-            go.Scatter(
-                x=df["trade_num"], y=df["drawdown"], mode="lines",
-                fill="tozeroy", line=dict(color=C_LOSS, width=1.5, shape="spline", smoothing=0.4),
-                fillcolor="rgba(234,57,67,0.22)",
-                hovertemplate="<b>Trade #%{x}</b><br>DD: $%{y:,.0f}<extra></extra>",
-            )
-        )
-        fig_dd.update_layout(**PLOTLY_LAYOUT, height=260, showlegend=False)
-        fig_dd.update_xaxes(title="Trade #")
-        fig_dd.update_yaxes(title="Drawdown $")
-        st.plotly_chart(fig_dd, width="stretch")
-
     with c_stats:
         st.markdown("#### Statistiche")
         stats_rows = [
@@ -841,42 +826,6 @@ with tab_strat:
     with c_boost:
         st.markdown("#### Per R-target")
         st.dataframe(agg_table("boost_label").style.format(strat_fmt), width="stretch")
-
-    st.markdown("#### Correlazione Opening Range size vs outcome")
-    if df["or_size"].dropna().shape[0] >= 5:
-        fig_or = go.Figure()
-        fig_or.add_trace(
-            go.Scatter(
-                x=df["or_size"], y=df["r_effective"], mode="markers",
-                marker=dict(
-                    size=12,
-                    color=df["is_win"].map({True: C_WIN, False: C_LOSS}),
-                    line=dict(color=C_BG, width=1),
-                    opacity=0.85,
-                ),
-                text=[f"{d} {h}" for d, h in zip(df["date"], df["entry_hour_str"])],
-                hovertemplate="<b>%{text}</b><br>OR size: %{x:.2f}<br>R: %{y:+.2f}<extra></extra>",
-            )
-        )
-        fig_or.add_hline(y=0, line_dash="dot", line_color=C_NEUTRAL)
-        try:
-            z = np.polyfit(df["or_size"], df["r_effective"], 1)
-            xs = np.linspace(df["or_size"].min(), df["or_size"].max(), 50)
-            fig_or.add_trace(
-                go.Scatter(
-                    x=xs, y=z[0] * xs + z[1], mode="lines",
-                    line=dict(color=C_ACCENT, dash="dash", width=2),
-                    name=f"Trend: {z[0]:+.3f}·x + {z[1]:+.2f}",
-                )
-            )
-            corr = df["or_size"].corr(df["r_effective"])
-            st.caption(f"Correlazione Pearson OR size ↔ R effettivo: **{corr:+.3f}**")
-        except Exception:
-            pass
-        fig_or.update_layout(**PLOTLY_LAYOUT, height=360)
-        fig_or.update_xaxes(title="OR size (punti)")
-        fig_or.update_yaxes(title="R effettivo")
-        st.plotly_chart(fig_or, width="stretch")
 
     st.markdown("#### Tempo in trade")
     c_h, c_s = st.columns(2)
